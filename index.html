@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grammarlol</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="heading">
+            <h1>Grammarlol</h1>
+        </div>
+        <div class="header">
+            <div class="upload">
+                <input id="inputfile" type="file" onchange="ReadFile()"><br/>
+            </div>
+        </div>
+        <div class="content">
+            <textarea id="filecontent" class="textarea" rows="10" cols="50"></textarea><br/>
+        </div>
+        <h2>Result</h2>
+        <div id="result"></div>
+        <div id="suggestion"></div>
+    </div>
+    <script>
+
+    //Upload the file on UI
+    function ReadFile(files){
+        let file = inputfile.files[0];
+        let reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function(){
+            filecontent.value = reader.result;
+            Checker();
+        }
+    }
+
+    //Spell Checker Request
+    async function Checker(){
+        let wrongSpellings=[];
+        var para = filecontent.value;
+        const res = await fetch("https://api.textgears.com/spelling?key=Tfj2kcFr0phBBPQu&text=" + para + "!&language=en-GB");
+        if(res.ok) {
+            data = await res.json();
+            console.log(data.response);
+            for(i of data.response.errors){
+                wrongSpellings.push(i.bad);
+            }
+        }
+        console.log(hell)
+        document.getElementById('result').innerHTML = transformContent(para, wrongSpellings);        
+    }
+
+    //Highlighter for error
+    function transformContent(para,keywords){
+        let temp = para;
+
+        keywords.forEach(keyword=>{
+            temp = temp.replace(new RegExp(keyword, 'ig'), wrapKeywordWithHTML(keyword, `https://www.google.com/search?q=${keyword}`))
+        })
+        return temp;
+    }
+
+    function wrapKeywordWithHTML(keyword, url){
+        return `<a href="${url}" target="_blank"> <span style="font-weight: bold; color: red; font-size: 30px">  ${keyword}  </span> </a>`
+    }
+    </script>
+</body>
+</html>
